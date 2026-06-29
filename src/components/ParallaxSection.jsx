@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, useScroll, useTransform } from 'framer-motion'
+import { useInView } from 'react-intersection-observer'
 
 export default function ParallaxSection({
   number,
@@ -33,6 +34,9 @@ export default function ParallaxSection({
 
   const y = isMobile ? 0 : yProgress
 
+  // Trigger the text entrance once the section scrolls into view.
+  const { ref: inViewRef, inView } = useInView({ triggerOnce: true, threshold: 0.4 })
+
   // align "right" => text on the right, image on the left.
   // On mobile the image always sits on top (DOM order), so we only
   // reorder on md+ via flex `order`.
@@ -57,10 +61,10 @@ export default function ParallaxSection({
 
       {/* Text pane — 40% on desktop */}
       <motion.div
+        ref={inViewRef}
         className={`relative flex w-full flex-col justify-center px-6 py-10 md:w-2/5 md:px-12 md:py-0 ${textOrder}`}
         initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.4 }}
+        animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
         transition={{ duration: 0.7, ease: 'easeOut' }}
       >
         {/* Huge faint section number, top-right */}
