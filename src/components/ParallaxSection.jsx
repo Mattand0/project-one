@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion, useScroll, useTransform } from 'framer-motion'
 
 export default function ParallaxSection({
@@ -18,7 +18,20 @@ export default function ParallaxSection({
   })
 
   // Image drifts slower than the page, creating depth (-8% → +8%)
-  const y = useTransform(scrollYProgress, [0, 1], ['-8%', '8%'])
+  const yProgress = useTransform(scrollYProgress, [0, 1], ['-8%', '8%'])
+
+  // Disable parallax on mobile (≤768px): the layout stacks and the image
+  // is a fixed 200px band, so the drift would only jitter the crop.
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)')
+    const update = () => setIsMobile(mq.matches)
+    update()
+    mq.addEventListener('change', update)
+    return () => mq.removeEventListener('change', update)
+  }, [])
+
+  const y = isMobile ? 0 : yProgress
 
   // align "right" => text on the right, image on the left.
   // On mobile the image always sits on top (DOM order), so we only
